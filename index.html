@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Campeonato FIFA da Família</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap');
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --green:#00C853;--green2:#00E676;--gold:#FFD700;
+      --dark:#0A0F0A;--card:#111811;--card2:#0e1a0e;
+      --border:#1e2e1e;--text:#E8F5E8;--muted:#6B8C6B;
+      --win:#00C853;--loss:#FF1744;
+    }
+    body{background:var(--dark);color:var(--text);font-family:'Inter',sans-serif;
+      min-height:100vh;padding:24px 16px 60px;max-width:1100px;margin:0 auto}
+
+    /* HEADER */
+    header{text-align:center;margin-bottom:32px}
+    header h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.4rem,8vw,5rem);
+      letter-spacing:.06em;line-height:1;
+      background:linear-gradient(135deg,var(--green),var(--green2));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    header p{color:var(--muted);font-size:.85rem;letter-spacing:.12em;text-transform:uppercase;margin-top:6px}
+
+    /* TABS */
+    .tabs{display:flex;gap:4px;margin-bottom:28px;border-bottom:2px solid var(--border)}
+    .tab-btn{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.1em;
+      background:none;border:none;color:var(--muted);padding:10px 20px;cursor:pointer;
+      border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .2s,border-color .2s}
+    .tab-btn:hover{color:var(--text)}
+    .tab-btn.active{color:var(--green);border-bottom-color:var(--green)}
+    .tab-panel{display:none}.tab-panel.active{display:block}
+
+    /* SECTION TITLE */
+    .section-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.1em;
+      color:var(--green);margin-bottom:14px;border-left:3px solid var(--green);padding-left:10px}
+
+    /* CONFIG */
+    .config-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:24px}
+    .config-row{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+    .config-row label{font-size:.8rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;min-width:100px}
+    .config-row select{background:var(--dark);border:1px solid var(--border);border-radius:6px;
+      color:var(--text);font-size:.95rem;font-weight:700;padding:8px 12px;outline:none;transition:border-color .2s}
+    .config-row select:focus{border-color:var(--green)}
+    .names-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:20px}
+    .name-input-wrap{position:relative}
+    .name-input-wrap label{font-size:.68rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;
+      position:absolute;top:-8px;left:10px;background:var(--card);padding:0 4px}
+    .name-input-wrap input{width:100%;background:var(--dark);border:1px solid var(--border);border-radius:8px;
+      color:var(--text);font-size:.92rem;font-weight:700;padding:10px 12px;outline:none;transition:border-color .2s}
+    .name-input-wrap input:focus{border-color:var(--green)}
+    .config-info{font-size:.78rem;color:var(--muted);margin-bottom:20px;line-height:1.8}
+    .config-info span{color:var(--green);font-weight:700}
+    .config-info .ko-stages{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+    .stage-pill{background:rgba(0,200,83,.1);border:1px solid rgba(0,200,83,.25);
+      color:var(--green);border-radius:20px;padding:2px 10px;font-size:.72rem;letter-spacing:.08em}
+
+    /* BUTTONS */
+    .btn-row{display:flex;gap:12px;flex-wrap:wrap}
+    button{background:var(--green);color:#000;border:none;border-radius:8px;padding:10px 22px;
+      font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.08em;cursor:pointer;transition:opacity .2s}
+    button:hover{opacity:.85}
+    button.secondary{background:transparent;color:var(--green);border:1px solid var(--green)}
+    button.danger{background:transparent;color:var(--loss);border:1px solid var(--loss)}
+
+    /* MATCHES */
+    .matches{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-bottom:40px}
+    .match-card{background:var(--card);border:1px solid var(--border);border-radius:10px;
+      padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;transition:border-color .2s}
+    .match-card:hover{border-color:var(--green)}
+    .match-num{font-size:.65rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+    .players{display:flex;align-items:center;gap:10px;flex:1;justify-content:center}
+    .player-name{font-weight:700;font-size:.88rem;text-align:center;min-width:68px}
+    .vs{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--muted);letter-spacing:.08em}
+    .score-input{display:flex;align-items:center;gap:6px}
+    .score-input input{width:36px;height:36px;background:var(--dark);border:1px solid var(--border);
+      border-radius:6px;color:var(--text);font-size:1rem;font-weight:700;text-align:center;outline:none;transition:border-color .2s}
+    .score-input input:focus{border-color:var(--green)}
+    .score-sep{color:var(--muted);font-weight:700}
+
+    /* TABLE */
+    .table-wrap{overflow-x:auto;margin-bottom:40px}
+    table{width:100%;border-collapse:collapse;font-size:.88rem}
+    thead tr{background:#0d150d}
+    th{padding:10px 14px;text-align:center;color:var(--muted);font-size:.72rem;
+      letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+    th:first-child{text-align:left}
+    tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
+    tbody tr:hover{background:#111f11}
+    tbody tr.qualified{border-left:3px solid var(--green)}
+    td{padding:11px 14px;text-align:center}
+    td:first-child{text-align:left}
+    .pos{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--muted);width:32px;display:inline-block}
+    .pos.gold{color:#FFD700}.pos.silver{color:#C0C0C0}.pos.bronze{color:#CD7F32}
+    .name-cell{font-weight:700}
+    .pts{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--green2)}
+    .gd-pos{color:var(--win)}.gd-neg{color:var(--loss)}.gd-zero{color:var(--muted)}
+    .qualified-note{font-size:.72rem;color:var(--green);letter-spacing:.08em;margin-top:6px}
+
+    /* BRACKET */
+    .bracket-scroll{overflow-x:auto;padding-bottom:16px;margin-bottom:40px}
+    .bracket{display:flex;align-items:stretch;gap:0;width:fit-content;min-width:100%}
+
+    .round-col{display:flex;flex-direction:column;min-width:230px}
+    .round-title{font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:.14em;
+      color:var(--muted);text-align:center;padding:0 8px 14px;white-space:nowrap}
+
+    .round-matches{display:flex;flex-direction:column;flex:1;justify-content:space-around;padding:0 8px}
+
+    .ko-match{background:var(--card);border:1px solid var(--border);border-radius:10px;
+      overflow:hidden;transition:border-color .2s;margin:6px 0}
+    .ko-match:hover{border-color:var(--green)}
+    .ko-match-label{font-size:.6rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;
+      padding:5px 12px 4px;border-bottom:1px solid var(--border);background:var(--card2)}
+    .ko-row{display:flex;align-items:center;justify-content:space-between;
+      padding:8px 12px;border-bottom:1px solid var(--border);gap:8px}
+    .ko-row:last-child{border-bottom:none}
+    .ko-row.winner-row{background:rgba(0,200,83,.08)}
+    .ko-pname{font-weight:700;font-size:.83rem;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ko-pname.tbd{color:var(--muted);font-weight:400;font-style:italic}
+    .ko-score-input{width:30px;height:30px;background:var(--dark);border:1px solid var(--border);
+      border-radius:6px;color:var(--text);font-size:.9rem;font-weight:700;text-align:center;
+      outline:none;transition:border-color .2s;-moz-appearance:textfield}
+    .ko-score-input::-webkit-inner-spin-button,.ko-score-input::-webkit-outer-spin-button{-webkit-appearance:none}
+    .ko-score-input:focus{border-color:var(--green)}
+    .ko-score-input:disabled{opacity:.28;cursor:not-allowed}
+
+    /* connector column between rounds */
+    .conn-col{display:flex;flex-direction:column;justify-content:space-around;
+      min-width:28px;padding-top:44px}
+    .conn-line{height:2px;background:var(--border);width:100%}
+
+
+
+    .empty-note{color:var(--muted);font-size:.9rem;padding:20px 0}
+
+    /* CHAMPION MODAL */
+    .champ-overlay{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.88);backdrop-filter:blur(8px);align-items:center;justify-content:center}
+    .champ-overlay.visible{display:flex}
+    .champ-modal{background:linear-gradient(160deg,#0c1f0c,#162b10,#0a1a0a);border-radius:24px;padding:44px 52px 40px;text-align:center;max-width:440px;width:92%;position:relative;overflow:hidden;animation:champPop .5s cubic-bezier(.175,.885,.32,1.275) both;box-shadow:0 0 0 2px #8B6914,0 0 60px rgba(255,215,0,.3),0 24px 60px rgba(0,0,0,.8)}
+    @keyframes champPop{from{transform:scale(.5) translateY(60px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+    .champ-modal::after{content:'★  ✦  ★  ✦  ★';position:absolute;top:10px;left:0;right:0;font-size:.7rem;letter-spacing:6px;color:rgba(255,215,0,.2);animation:sparkle 2s ease-in-out infinite alternate;pointer-events:none}
+    @keyframes sparkle{from{opacity:.15;letter-spacing:6px}to{opacity:.5;letter-spacing:10px}}
+    .champ-label{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.3em;background:linear-gradient(135deg,#FFD700,#FFFDE7,#F9A825);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px}
+    .champ-name-display{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.8rem,6vw,2.8rem);letter-spacing:.05em;line-height:1.1;background:linear-gradient(135deg,#FFFFFF,#FFF9C4,#FFD700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:24px}
+    .champ-trophy-wrap{width:200px;height:200px;margin:0 auto 28px;filter:drop-shadow(0 0 24px rgba(255,215,0,.6));animation:trophyFloat 3s ease-in-out infinite}
+    @keyframes trophyFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+    .champ-close{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.12em;background:transparent;color:#B8860B;border:1px solid #B8860B;border-radius:8px;padding:8px 28px;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+    .champ-close:hover{background:#FFD700;color:#000;border-color:#FFD700}
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Campeonato FIFA</h1>
+  <p>Família — Fase de Grupos + Mata-Mata</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('config')">⚙ Configurar</button>
+  <button class="tab-btn" onclick="switchTab('grupos')">📋 Fase de Grupos</button>
+  <button class="tab-btn" onclick="switchTab('matamata')">🏆 Mata-Mata</button>
+</div>
+
+<!-- CONFIG -->
+<div class="tab-panel active" id="tab-config">
+  <p class="section-title">Configuração do Campeonato</p>
+  <div class="config-box">
+    <div class="config-row">
+      <label>Nº de times</label>
+      <select id="num-teams" onchange="onNumTeamsChange()">
+        <option value="2">2</option><option value="3">3</option><option value="4">4</option>
+        <option value="5" selected>5</option><option value="6">6</option><option value="7">7</option>
+        <option value="8">8</option><option value="9">9</option><option value="10">10</option>
+        <option value="11">11</option><option value="12">12</option><option value="13">13</option>
+        <option value="14">14</option><option value="15">15</option><option value="16">16</option>
+      </select>
+    </div>
+    <div class="names-grid" id="names-grid"></div>
+    <div class="config-info" id="config-info"></div>
+    <div class="btn-row">
+      <button onclick="applyConfig()">Aplicar e Iniciar</button>
+      <button class="danger" onclick="resetAll()">Limpar Tudo</button>
+    </div>
+  </div>
+</div>
+
+<!-- GRUPOS -->
+<div class="tab-panel" id="tab-grupos">
+  <p class="section-title">Partidas — Fase de Grupos</p>
+  <div class="matches" id="matches"></div>
+  <p class="section-title">Classificação</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>#</th><th style="text-align:left">Jogador</th>
+        <th>J</th><th>V</th><th>E</th><th>D</th>
+        <th>GP</th><th>GC</th><th>SG</th><th>Pts</th>
+      </tr></thead>
+      <tbody id="standings"></tbody>
+    </table>
+    <p class="qualified-note" id="qualified-note"></p>
+  </div>
+</div>
+
+<!-- MATA-MATA -->
+<div class="tab-panel" id="tab-matamata">
+  <p class="section-title">Chaveamento</p>
+  <div class="bracket-scroll"><div class="bracket" id="bracket"></div></div>
+  <p class="empty-note" id="bracket-empty" style="display:none">Configure o campeonato primeiro.</p>
+</div>
+
+
+
+<script>
+// ── STORAGE ──────────────────────────────────────────
+const K_CFG='fifa_cfg', K_GRP='fifa_grp', K_KO='fifa_ko';
+const ld = k=>{ try{ return JSON.parse(localStorage.getItem(k))||null }catch{return null} };
+const sv = (k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)) }catch{} };
+const loadCfg=()=>ld(K_CFG)||{};
+const loadGrp=()=>ld(K_GRP)||{};
+const loadKO =()=>ld(K_KO )||{};
+
+// ── STATE ─────────────────────────────────────────────
+function defaultPlayers(n){ return Array.from({length:n},(_,i)=>`Jogador ${i+1}`); }
+let PLAYERS = defaultPlayers(5);
+let GROUP_MATCHES = [];
+
+function buildMatches(){
+  GROUP_MATCHES=[];
+  for(let i=0;i<PLAYERS.length;i++)
+    for(let j=i+1;j<PLAYERS.length;j++)
+      GROUP_MATCHES.push({home:PLAYERS[i],away:PLAYERS[j]});
+}
+const gid = m=>`${m.home}__${m.away}`;
+
+// ── KO SIZE LOGIC ─────────────────────────────────────
+// Returns the bracket size (always power of 2):
+//   2–3   → 2  (só Final)
+//   4–7   → 4  (Semifinal + Final)
+//   8–15  → 8  (Quartas + Semi + Final)
+//   16+   → 16 (Oitavas + Quartas + Semi + Final)
+function koSize(n){
+  if(n<=3)  return 2;
+  if(n<=7)  return 4;
+  if(n<=15) return 8;
+  return 16;
+}
+
+// rounds for a bracket of size s (s=2→1, s=4→2, s=8→3, s=16→4)
+function numRounds(s){ return Math.log2(s); }
+
+// Round names
+const ROUND_NAMES = { 16:'Oitavas de Final', 8:'Quartas de Final', 4:'Semifinal', 2:'Final' };
+
+// ── TABS ──────────────────────────────────────────────
+function switchTab(id){
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
+    b.classList.toggle('active',['config','grupos','matamata'][i]===id);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if(id==='grupos'){ renderGroupMatches(); recalc(); }
+  if(id==='matamata'){ renderBracket(computeStandings()); }
+}
+
+// ── CONFIG ────────────────────────────────────────────
+function onNumTeamsChange(){
+  const n=parseInt(document.getElementById('num-teams').value);
+  renderNameInputs(n);
+  updateConfigInfo(n);
+}
+
+function renderNameInputs(n){
+  const grid=document.getElementById('names-grid');
+  grid.innerHTML='';
+  for(let i=0;i<n;i++){
+    const cur=`Jogador ${i+1}`;
+    const w=document.createElement('div'); w.className='name-input-wrap';
+    w.innerHTML=`<label>Time ${i+1}</label>
+      <input type="text" maxlength="20" value="${esc(cur)}" id="pname-${i}" placeholder="Jogador ${i+1}"/>`;
+    grid.appendChild(w);
+  }
+}
+
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function updateConfigInfo(n){
+  const matches=(n*(n-1))/2;
+  const ks=koSize(n);
+  const qualified=Math.min(n,ks);
+  const rounds=numRounds(ks);
+  const stageNames=[];
+  let cur=ks;
+  while(cur>=2){ stageNames.push(ROUND_NAMES[cur]||`Rodada (${cur})`); cur=cur/2; }
+  document.getElementById('config-info').innerHTML=
+    `Partidas na fase de grupos: <span>${matches}</span> &nbsp;|&nbsp; `+
+    `Times no mata-mata: <span>${qualified}</span> &nbsp;|&nbsp; `+
+    `Rodadas: <span>${rounds}</span><br>`+
+    `<div class="ko-stages" style="margin-top:8px">`+
+    stageNames.map(s=>`<span class="stage-pill">${s}</span>`).join('')+
+    `</div>`;
+}
+
+function applyConfig(){
+  const n=parseInt(document.getElementById('num-teams').value);
+  const names=[];
+  for(let i=0;i<n;i++){
+    const v=document.getElementById(`pname-${i}`)?.value.trim();
+    names.push(v||`Jogador ${i+1}`);
+  }
+  if(new Set(names).size!==names.length){
+    alert('Há nomes duplicados. Por favor use nomes diferentes.');
+    return;
+  }
+  PLAYERS=names; buildMatches();
+  sv(K_CFG,{players:PLAYERS});
+  try{ localStorage.removeItem(K_GRP); localStorage.removeItem(K_KO); }catch{}
+  renderGroupMatches(); recalc();
+  switchTab('grupos');
+}
+
+// ── GROUP MATCHES ─────────────────────────────────────
+function renderGroupMatches(){
+  const scores=loadGrp();
+  const c=document.getElementById('matches');
+  c.innerHTML='';
+  if(!GROUP_MATCHES.length){
+    c.innerHTML='<p class="empty-note">Configure o campeonato primeiro.</p>'; return;
+  }
+  GROUP_MATCHES.forEach((m,idx)=>{
+    const id=gid(m), sc=scores[id]||{h:'',a:''};
+    const card=document.createElement('div'); card.className='match-card';
+    card.innerHTML=`
+      <span class="match-num">Jogo ${idx+1}</span>
+      <div class="players">
+        <span class="player-name">${esc(m.home)}</span>
+        <span class="vs">VS</span>
+        <span class="player-name">${esc(m.away)}</span>
+      </div>
+      <div class="score-input">
+        <input type="number" min="0" max="99" value="${sc.h}" placeholder="–" data-id="${id}" data-side="h"/>
+        <span class="score-sep">:</span>
+        <input type="number" min="0" max="99" value="${sc.a}" placeholder="–" data-id="${id}" data-side="a"/>
+      </div>`;
+    c.appendChild(card);
+  });
+  c.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('change',()=>{
+      const s=loadGrp(), id=inp.dataset.id;
+      if(!s[id]) s[id]={h:'',a:''};
+      s[id][inp.dataset.side]=inp.value;
+      sv(K_GRP,s); recalc();
+    });
+  });
+}
+
+// ── STANDINGS ─────────────────────────────────────────
+function computeStandings(){
+  const scores=loadGrp(), stats={};
+  PLAYERS.forEach(p=>{ stats[p]={j:0,v:0,e:0,d:0,gp:0,gc:0,pts:0}; });
+  GROUP_MATCHES.forEach(m=>{
+    const sc=scores[gid(m)];
+    if(!sc||sc.h===''||sc.a==='') return;
+    const h=parseInt(sc.h),a=parseInt(sc.a);
+    if(isNaN(h)||isNaN(a)) return;
+    stats[m.home].j++; stats[m.away].j++;
+    stats[m.home].gp+=h; stats[m.home].gc+=a;
+    stats[m.away].gp+=a; stats[m.away].gc+=h;
+    if(h>a){ stats[m.home].v++; stats[m.home].pts+=3; stats[m.away].d++; }
+    else if(h<a){ stats[m.away].v++; stats[m.away].pts+=3; stats[m.home].d++; }
+    else{ stats[m.home].e++; stats[m.home].pts++; stats[m.away].e++; stats[m.away].pts++; }
+  });
+  return PLAYERS.slice().sort((a,b)=>{
+    const pa=stats[a],pb=stats[b];
+    if(pb.pts!==pa.pts) return pb.pts-pa.pts;
+    const sga=pa.gp-pa.gc,sgb=pb.gp-pb.gc;
+    if(sgb!==sga) return sgb-sga;
+    return pb.gp-pa.gp;
+  }).map(p=>({name:p,...stats[p]}));
+}
+
+function renderStandings(sorted){
+  const ks=koSize(PLAYERS.length);
+  const qualified=Math.min(PLAYERS.length,ks);
+  const tbody=document.getElementById('standings');
+  tbody.innerHTML='';
+  sorted.forEach((s,i)=>{
+    const sg=s.gp-s.gc;
+    const posClass=i===0?'gold':i===1?'silver':i===2?'bronze':'';
+    const sgClass=sg>0?'gd-pos':sg<0?'gd-neg':'gd-zero';
+    const tr=document.createElement('tr');
+    if(i<qualified) tr.classList.add('qualified');
+    tr.innerHTML=`
+      <td><span class="pos ${posClass}">${i+1}</span></td>
+      <td class="name-cell">${esc(s.name)}</td>
+      <td>${s.j}</td><td>${s.v}</td><td>${s.e}</td><td>${s.d}</td>
+      <td>${s.gp}</td><td>${s.gc}</td>
+      <td class="${sgClass}">${sg>0?'+':''}${sg}</td>
+      <td class="pts">${s.pts}</td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('qualified-note').textContent=
+    `▎ Linha verde = classificado para o mata-mata (top ${qualified})`;
+}
+
+// ── BRACKET ENGINE ────────────────────────────────────
+//
+// We build a complete binary tree of KO_SIZE slots.
+// Slot seeding (1v last, 2v second-last, etc.):
+//   slot 0 = seed 1, slot 1 = seed KS, slot 2 = seed 2, slot 3 = seed KS-1 ...
+// Teams beyond PLAYERS.length get a "bye" (auto-advance).
+//
+// Each match stored as  ko[matchKey] = {h, a}
+// matchKey: "r{round}m{matchIndex}"  e.g. "r0m0" (round 0 = first round)
+// round 0 = oitavas / first round, last round = final
+
+function seedOrder(ks){
+  // returns array of seed numbers (1-based) in slot order
+  // standard bracket seeding: 1 vs ks, 2 vs ks-1, 3 vs ks-2 ...
+  const seeds=[];
+  for(let i=0;i<ks/2;i++) seeds.push([i+1, ks-i]);
+  // flatten pair-by-pair: [1,ks,2,ks-1,...]
+  const flat=[];
+  seeds.forEach(([a,b])=>{ flat.push(a); flat.push(b); });
+  return flat; // length == ks
+}
+
+function getKOWinner(nameH, nameA, sc){
+  if(!nameH||!nameA||!sc||sc.h===''||sc.a===''||sc.h===undefined) return null;
+  const h=parseInt(sc.h), a=parseInt(sc.a);
+  if(isNaN(h)||isNaN(a)||h===a) return null;
+  return h>a ? nameH : nameA;
+}
+
+// Build full bracket state: array of rounds, each round = array of matches
+// Each match: { key, nameH, nameA, hasBye }
+function buildBracketState(sorted){
+  const n=PLAYERS.length;
+  const ks=koSize(n);
+  const rounds=numRounds(ks);
+  const ko=loadKO();
+  const qualified=Math.min(n,ks);
+
+  // seed slots → player name or null (bye)
+  const slots=seedOrder(ks).map((seed,i)=>{
+    if(seed<=qualified) return sorted[seed-1]?.name||null;
+    return null; // bye slot
+  });
+
+  // Build round 0 matches from slots
+  const allRounds=[];
+  let prevRound=[];
+  for(let i=0;i<ks/2;i++){
+    const nameH=slots[i*2];
+    const nameA=slots[i*2+1];
+    const key=`r0m${i}`;
+    const sc=ko[key]||{h:'',a:''};
+    // Bye: if one side is null, the other auto-advances (no score needed)
+    const hasByeH = !nameH;
+    const hasByeA = !nameA;
+    let winner=null;
+    if(hasByeH && nameA) winner=nameA;
+    else if(hasByeA && nameH) winner=nameH;
+    else winner=getKOWinner(nameH,nameA,sc);
+    prevRound.push({key,nameH,nameA,sc,winner,hasBye:hasByeH||hasByeA,round:0,idx:i});
+  }
+  allRounds.push(prevRound);
+
+  // Build subsequent rounds from winners of previous
+  for(let r=1;r<rounds;r++){
+    const cur=[];
+    const prev=allRounds[r-1];
+    for(let i=0;i<prev.length/2;i++){
+      const wH=prev[i*2].winner;
+      const wA=prev[i*2+1].winner;
+      const key=`r${r}m${i}`;
+      const sc=ko[key]||{h:'',a:''};
+      let winner=null;
+      if(wH&&!wA) winner=wH;
+      else if(wA&&!wH) winner=wA;
+      else winner=getKOWinner(wH,wA,sc);
+      cur.push({key,nameH:wH,nameA:wA,sc,winner,hasBye:false,round:r,idx:i});
+    }
+    allRounds.push(cur);
+    prevRound=cur;
+  }
+  return allRounds;
+}
+
+function renderBracket(sorted){
+  const bracket=document.getElementById('bracket');
+  const emptyNote=document.getElementById('bracket-empty');
+  bracket.innerHTML='';
+
+  if(PLAYERS.length<2){ emptyNote.style.display='block'; return; }
+  emptyNote.style.display='none';
+
+  const ks=koSize(PLAYERS.length);
+  const rounds=numRounds(ks);
+  const allRounds=buildBracketState(sorted);
+
+  allRounds.forEach((round,ri)=>{
+    const matchesInRound=round.length;
+    const bracketSize=ks/Math.pow(2,ri); // slots remaining in this round
+    const roundName=ROUND_NAMES[bracketSize]||`Rodada ${ri+1}`;
+
+    const col=document.createElement('div'); col.className='round-col';
+
+    const title=document.createElement('div'); title.className='round-title';
+    title.textContent=ri===allRounds.length-1?'Final':roundName;
+    col.appendChild(title);
+
+    const matchesWrap=document.createElement('div'); matchesWrap.className='round-matches';
+
+    round.forEach(m=>{
+      const ready=!!(m.nameH&&m.nameA)&&!m.hasBye;
+      const card=document.createElement('div'); card.className='ko-match';
+
+      // label
+      const lbl=document.createElement('div'); lbl.className='ko-match-label';
+      lbl.textContent= ri===allRounds.length-1 ? 'Final' :
+                       m.hasBye ? `${roundName} — Bye` :
+                       roundName;
+      card.appendChild(lbl);
+
+      ['h','a'].forEach(side=>{
+        const name=side==='h'?m.nameH:m.nameA;
+        const isWinner=m.winner&&m.winner===name;
+        const row=document.createElement('div');
+        row.className='ko-row'+(isWinner?' winner-row':'');
+
+        const nameSpan=document.createElement('span');
+        nameSpan.className='ko-pname'+(name?'':' tbd');
+        nameSpan.textContent=name||'A definir';
+
+        const inp=document.createElement('input');
+        inp.className='ko-score-input';
+        inp.type='number'; inp.min='0'; inp.max='99';
+        inp.placeholder='–';
+        inp.dataset.match=m.key; inp.dataset.side=side;
+        inp.disabled=!ready;
+        if(ready && m.sc[side]!==undefined && m.sc[side]!=='')
+          inp.value=m.sc[side];
+
+        row.appendChild(nameSpan); row.appendChild(inp);
+        card.appendChild(row);
+      });
+
+      // if bye, show auto-advance notice
+      if(m.hasBye){
+        const bye=document.createElement('div');
+        bye.style.cssText='font-size:.62rem;color:var(--muted);padding:4px 12px 6px;text-align:center;font-style:italic';
+        bye.textContent='Avança automaticamente';
+        card.appendChild(bye);
+      }
+
+      matchesWrap.appendChild(card);
+    });
+
+    col.appendChild(matchesWrap);
+    bracket.appendChild(col);
+
+    // connector column
+    if(ri<allRounds.length-1){
+      const conn=document.createElement('div'); conn.className='conn-col';
+      round.forEach((_,i)=>{
+        if(i%2===0){
+          const line=document.createElement('div'); line.className='conn-line';
+          conn.appendChild(line);
+        }
+      });
+      bracket.appendChild(conn);
+    }
+  });
+
+
+  // ── champion detection ──
+  const finalMatch = allRounds[allRounds.length-1][0];
+  const champion = finalMatch?.winner || null;
+  if(champion && champion !== window._lastChamp){
+    window._lastChamp = champion;
+    document.getElementById('champ-name-display').textContent = champion;
+    document.getElementById('champ-overlay').classList.add('visible');
+  }
+  if(!champion) window._lastChamp = null;
+
+  // wire inputs
+  bracket.querySelectorAll('.ko-score-input').forEach(inp=>{
+    inp.addEventListener('change',()=>{
+      const ko=loadKO();
+      const mk=inp.dataset.match, sd=inp.dataset.side;
+      if(!ko[mk]) ko[mk]={h:'',a:''};
+      ko[mk][sd]=inp.value;
+      sv(K_KO,ko);
+      renderBracket(computeStandings());
+    });
+  });
+
+}
+
+// ── RECALC ────────────────────────────────────────────
+function recalc(){
+  const sorted=computeStandings();
+  renderStandings(sorted);
+  if(document.getElementById('tab-matamata').classList.contains('active'))
+    renderBracket(sorted);
+}
+
+function resetAll(){
+  if(!confirm('Limpar TODOS os resultados (grupos + mata-mata)?')) return;
+  try{ localStorage.removeItem(K_GRP); localStorage.removeItem(K_KO); }catch{}
+  renderGroupMatches(); recalc();
+}
+
+
+function closeChampion(e){
+  if(e && e.target!==document.getElementById('champ-overlay')) return;
+  document.getElementById('champ-overlay').classList.remove('visible');
+}
+
+// ── INIT ──────────────────────────────────────────────
+(function init(){
+  const saved=loadCfg();
+  if(saved?.players?.length>=2){ PLAYERS=saved.players; }
+  buildMatches();
+  const n=PLAYERS.length;
+  document.getElementById('num-teams').value=n;
+  onNumTeamsChange();
+  // inputs always start as "Jogador N" — user fills in names before applying
+  renderGroupMatches();
+  recalc();
+})();
+</script>
+
+<!-- CHAMPION MODAL -->
+<div class="champ-overlay" id="champ-overlay" onclick="closeChampion(event)">
+  <div class="champ-modal">
+    <div class="champ-label">🏆 &nbsp; C A M P E Ã O &nbsp; 🏆</div>
+    <div class="champ-name-display" id="champ-name-display"></div>
+    <div class="champ-trophy-wrap">
+      <svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <!-- Main gold gradient -->
+          <linearGradient id="gMain" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%"   stop-color="#FFD700"/>
+            <stop offset="30%"  stop-color="#FFF176"/>
+            <stop offset="60%"  stop-color="#FFD700"/>
+            <stop offset="100%" stop-color="#B8860B"/>
+          </linearGradient>
+          <!-- Dark shadow gradient for depth -->
+          <linearGradient id="gShadow" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   stop-color="#7A5800" stop-opacity="0.6"/>
+            <stop offset="40%"  stop-color="#FFD700" stop-opacity="0"/>
+            <stop offset="100%" stop-color="#7A5800" stop-opacity="0.5"/>
+          </linearGradient>
+          <!-- Shine highlight -->
+          <linearGradient id="gShine" x1="0%" y1="0%" x2="10%" y2="100%">
+            <stop offset="0%"   stop-color="#FFFFFF" stop-opacity="0.7"/>
+            <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+          </linearGradient>
+          <!-- Base gradient -->
+          <linearGradient id="gBase" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%"   stop-color="#FFD700"/>
+            <stop offset="100%" stop-color="#9A6E00"/>
+          </linearGradient>
+          <!-- Engraving gradient -->
+          <linearGradient id="gEngrave" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%"   stop-color="#A07000"/>
+            <stop offset="100%" stop-color="#6B4A00"/>
+          </linearGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="3" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <!-- ── BASE PLATE ── -->
+        <rect x="62" y="210" width="116" height="12" rx="6" fill="url(#gBase)"/>
+        <rect x="68" y="210" width="104" height="4" rx="2" fill="rgba(255,255,255,0.25)"/>
+        <!-- base decorative lines -->
+        <rect x="72" y="215" width="96" height="2" rx="1" fill="url(#gEngrave)"/>
+
+        <!-- ── PEDESTAL / STEM ── -->
+        <!-- Lower stem block -->
+        <rect x="88" y="192" width="64" height="20" rx="4" fill="url(#gMain)"/>
+        <rect x="88" y="192" width="64" height="6" rx="3" fill="rgba(255,255,255,0.2)"/>
+        <!-- middle narrow stem -->
+        <rect x="100" y="162" width="40" height="32" rx="3" fill="url(#gMain)"/>
+        <rect x="100" y="162" width="12" height="32" rx="2" fill="rgba(255,255,255,0.18)"/>
+        <rect x="128" y="162" width="12" height="32" rx="2" fill="rgba(0,0,0,0.12)"/>
+        <!-- stem-to-cup connector flare -->
+        <path d="M88 162 Q120 156 152 162 L148 170 Q120 164 92 170 Z" fill="url(#gMain)"/>
+        <path d="M92 162 Q120 158 148 162" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" fill="none"/>
+
+        <!-- ── CUP BODY ── -->
+        <!-- Main cup silhouette — smooth chalice shape -->
+        <path d="M56 32
+                 C54 32 50 36 50 42
+                 L54 100
+                 C56 128 72 150 92 158
+                 L148 158
+                 C168 150 184 128 186 100
+                 L190 42
+                 C190 36 186 32 184 32
+                 Z"
+              fill="url(#gMain)"/>
+
+        <!-- Cup depth shadow overlay -->
+        <path d="M56 32
+                 C54 32 50 36 50 42
+                 L54 100
+                 C56 128 72 150 92 158
+                 L148 158
+                 C168 150 184 128 186 100
+                 L190 42
+                 C190 36 186 32 184 32
+                 Z"
+              fill="url(#gShadow)"/>
+
+        <!-- Cup inner cavity (dark bowl) -->
+        <path d="M72 40
+                 C70 40 68 44 68 48
+                 L72 94
+                 C74 114 84 130 100 136
+                 L140 136
+                 C156 130 166 114 168 94
+                 L172 48
+                 C172 44 170 40 168 40
+                 Z"
+              fill="#1a0f00" opacity="0.55"/>
+
+        <!-- Cup shine/highlight left -->
+        <path d="M68 38 C66 48 67 80 74 110 C78 126 86 140 94 148
+                 L88 148 C76 138 66 120 63 100 L59 50 C59 42 63 38 68 38 Z"
+              fill="url(#gShine)"/>
+
+        <!-- Cup rim top — thick rounded edge -->
+        <path d="M50 42 C50 34 56 28 65 28 L175 28 C184 28 190 34 190 42 L186 50 C186 44 182 36 174 36 L66 36 C58 36 54 44 54 50 Z"
+              fill="url(#gMain)"/>
+        <path d="M65 28 L175 28 C184 28 190 34 190 42"
+              stroke="rgba(255,255,255,0.4)" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+        <!-- ── HANDLES ── -->
+        <!-- Left handle - decorative S-curve -->
+        <path d="M54 55 C30 55 18 72 20 92 C22 110 36 122 54 118"
+              stroke="url(#gMain)" stroke-width="14" fill="none" stroke-linecap="round"/>
+        <path d="M54 55 C30 55 18 72 20 92 C22 110 36 122 54 118"
+              stroke="rgba(255,255,255,0.25)" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M54 55 C34 57 24 72 26 90 C28 106 40 118 54 118"
+              stroke="rgba(0,0,0,0.15)" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <!-- Left handle decorative knob top -->
+        <circle cx="54" cy="55" r="7" fill="url(#gMain)"/>
+        <circle cx="54" cy="55" r="3" fill="rgba(255,255,255,0.5)"/>
+        <!-- Left handle decorative knob bottom -->
+        <circle cx="54" cy="118" r="7" fill="url(#gMain)"/>
+        <circle cx="54" cy="118" r="3" fill="rgba(255,255,255,0.4)"/>
+
+        <!-- Right handle - mirror -->
+        <path d="M186 55 C210 55 222 72 220 92 C218 110 204 122 186 118"
+              stroke="url(#gMain)" stroke-width="14" fill="none" stroke-linecap="round"/>
+        <path d="M186 55 C210 55 222 72 220 92 C218 110 204 122 186 118"
+              stroke="rgba(255,255,255,0.25)" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M186 55 C206 57 216 72 214 90 C212 106 200 118 186 118"
+              stroke="rgba(0,0,0,0.15)" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <!-- Right handle decorative knobs -->
+        <circle cx="186" cy="55" r="7" fill="url(#gMain)"/>
+        <circle cx="186" cy="55" r="3" fill="rgba(255,255,255,0.5)"/>
+        <circle cx="186" cy="118" r="7" fill="url(#gMain)"/>
+        <circle cx="186" cy="118" r="3" fill="rgba(255,255,255,0.4)"/>
+
+        <!-- ── ENGRAVINGS ON CUP BODY ── -->
+        <!-- Central laurel wreath -->
+        <!-- Left laurel branch -->
+        <path d="M88 100 C82 94 78 88 80 82 C84 88 86 94 88 100Z" fill="#B8860B" opacity="0.7"/>
+        <path d="M88 100 C80 96 76 90 76 84 C81 90 84 96 88 100Z" fill="#B8860B" opacity="0.6"/>
+        <path d="M88 100 C80 104 76 110 78 116 C83 110 86 104 88 100Z" fill="#B8860B" opacity="0.7"/>
+        <path d="M88 100 C82 106 80 112 82 118 C86 112 87 106 88 100Z" fill="#B8860B" opacity="0.6"/>
+        <!-- Right laurel branch (mirror) -->
+        <path d="M152 100 C158 94 162 88 160 82 C156 88 154 94 152 100Z" fill="#B8860B" opacity="0.7"/>
+        <path d="M152 100 C160 96 164 90 164 84 C159 90 156 96 152 100Z" fill="#B8860B" opacity="0.6"/>
+        <path d="M152 100 C160 104 164 110 162 116 C157 110 154 104 152 100Z" fill="#B8860B" opacity="0.7"/>
+        <path d="M152 100 C158 106 160 112 158 118 C154 112 153 106 152 100Z" fill="#B8860B" opacity="0.6"/>
+        <!-- Laurel stems -->
+        <line x1="88" y1="100" x2="100" y2="100" stroke="#9A6E00" stroke-width="1.5"/>
+        <line x1="152" y1="100" x2="140" y2="100" stroke="#9A6E00" stroke-width="1.5"/>
+
+        <!-- Central star -->
+        <polygon points="120,80 124,93 138,93 127,101 131,114 120,106 109,114 113,101 102,93 116,93"
+                 fill="#B8860B" opacity="0.8"/>
+        <polygon points="120,83 123,93 134,93 126,99 129,110 120,104 111,110 114,99 106,93 117,93"
+                 fill="#FFD700" opacity="0.6"/>
+
+        <!-- Horizontal decorative bands -->
+        <rect x="58" y="44" width="124" height="3" rx="1.5" fill="rgba(255,255,255,0.2)"/>
+        <rect x="62" y="50" width="116" height="1.5" rx=".75" fill="rgba(255,255,255,0.12)"/>
+        <rect x="66" y="142" width="108" height="3" rx="1.5" fill="rgba(0,0,0,0.2)"/>
+        <rect x="66" y="148" width="108" height="2" rx="1" fill="rgba(0,0,0,0.15)"/>
+
+        <!-- ── GEMS / RIVET DOTS ── -->
+        <circle cx="90" cy="47" r="3" fill="#FFF9C4" opacity="0.8"/>
+        <circle cx="120" cy="47" r="3" fill="#FFF9C4" opacity="0.8"/>
+        <circle cx="150" cy="47" r="3" fill="#FFF9C4" opacity="0.8"/>
+
+        <!-- ── GLOW AURA behind trophy ── -->
+        <ellipse cx="120" cy="190" rx="55" ry="8" fill="rgba(255,215,0,0.15)"/>
+      </svg>
+    </div>
+    <button class="champ-close" onclick="closeChampion()">Fechar</button>
+  </div>
+</div>
+
+</body>
+</html>
